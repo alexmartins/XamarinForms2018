@@ -12,12 +12,11 @@ namespace App01_ConsultarCEP
 	public partial class MainPage : ContentPage
 	{
         int restrictCount = 8; //Enter your number of character restriction
-
         public MainPage()
 		{
 			InitializeComponent();
             CEP.TextChanged += OnTextChanged;
-            CEP.Text = "00000000";
+            //CEP.Text = "00000000";
             BOTAO.Clicked += BuscarCEP;
 		}
 
@@ -35,13 +34,38 @@ namespace App01_ConsultarCEP
 
         private void BuscarCEP(Object sender, EventArgs args)
         { 
-            //TODO: Lógica do programa
-
-            //TODO: Validações
             string cep = CEP.Text.Trim();
-            Endereco end = ViaCEPServico.BuscarEnderecoViaCEP(cep);
-            RESULTADO.Text = string.Format("Endereço:\r\n\r\n{0}, {1} \r\n{2} - {3}", end.logradouro, end.bairro, end.localidade, end.uf);
-            CEP.Focus();
+            if(isValidCEP(cep)){
+                try{
+                    Endereco end = ViaCEPServico.BuscarEnderecoViaCEP(cep);
+                    if(end != null)
+                    {
+                        RESULTADO.Text = string.Format("Endereço:\r\n\r\n{0}, {1} \r\n{2} - {3}", end.logradouro, end.bairro, end.localidade, end.uf);
+                    }
+                    else
+                    {
+                        DisplayAlert("ERRO", "O endereço não foi localizado para o CEP: " + cep, "OK");
+                    }
+                    CEP.Focus();
+                }
+                catch (Exception e){
+                    DisplayAlert("ERRO CRÍTICO", e.Message, "OK");
+                }
+            }
+        }
+
+        private bool isValidCEP(String cep){
+            bool valido = true;
+            if(cep.Length != 8){
+                DisplayAlert("ERRO", "CEP inválido! O CEP deve contar 8 caracteres.", "OK");
+                valido = false;
+            }
+            int novoCEP = 0;
+            if(!int.TryParse(cep, out novoCEP)){
+                DisplayAlert("ERRO", "CEP inválido! O CEP deve contar 8 caracteres.", "OK");
+                valido = false;
+            }        
+            return valido;
         }
 	}
 }
